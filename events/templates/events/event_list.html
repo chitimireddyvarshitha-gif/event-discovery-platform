@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Events — EventHub{% endblock %}
+
+{% block content %}
+<!-- Header Hero Strip -->
+<div class="row align-items-center mb-5 anim-stagger">
+    <div class="col-lg-8">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill mb-3 small fw-semibold">
+            <i class="bi bi-compass me-1"></i> Live Event Portal
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-2" style="font-size: clamp(2.25rem, 1.6rem + 3vw, 4rem);">
+            Explore <span class="text-gradient">Local Vibe</span>
+        </h1>
+        <p class="text-muted fs-5 mb-0">
+            {{ page_obj.paginator.count }} events found matching your search. Discover and save your next plans.
+        </p>
+    </div>
+    {% if user.is_authenticated and user.role == 'organizer' %}
+    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a class="btn btn-premium-primary py-3 px-4" href="{% url 'events:create' %}">
+            <i class="bi bi-plus-lg me-2"></i> Create Event
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Active Filter Chips -->
+{% if q or selected_category or location or price or date_filter %}
+<div class="d-flex flex-wrap gap-2 mb-4 align-items-center anim-stagger">
+    <span class="text-muted small fw-bold text-uppercase me-2">Active Filters:</span>
+    
+    {% if q %}
+    <div class="filter-chip-active">
+        <span>Search: "{{ q }}"</span>
+        <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if location %}&location={{ location }}{% endif %}{% if price %}&price={{ price }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="btn-close-chip" title="Remove filter">&times;</a>
+    </div>
+    {% endif %}
+    
+    {% if selected_category %}
+    <div class="filter-chip-active">
+        <span>Category: {{ selected_category|title }}</span>
+        <a href="?page=1{% if q %}&q={{ q }}{% endif %}{% if location %}&location={{ location }}{% endif %}{% if price %}&price={{ price }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="btn-close-chip" title="Remove filter">&times;</a>
+    </div>
+    {% endif %}
+    
+    {% if location %}
+    <div class="filter-chip-active">
+        <span>Near: "{{ location }}"</span>
+        <a href="?page=1{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if price %}&price={{ price }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="btn-close-chip" title="Remove filter">&times;</a>
+    </div>
+    {% endif %}
+    
+    {% if price %}
+    <div class="filter-chip-active">
+        <span>Pricing: {{ price|title }}</span>
+        <a href="?page=1{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if location %}&location={{ location }}{% endif %}{% if date_filter %}&date_filter={{ date_filter }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="btn-close-chip" title="Remove filter">&times;</a>
+    </div>
+    {% endif %}
+    
+    {% if date_filter %}
+    <div class="filter-chip-active">
+        <span>Timeframe: {{ date_filter|title }}</span>
+        <a href="?page=1{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if location %}&location={{ location }}{% endif %}{% if price %}&price={{ price }}{% endif %}{% if sort_by %}&sort_by={{ sort_by }}{% endif %}" class="btn-close-chip" title="Remove filter">&times;</a>
+    </div>
+    {% endif %}
+    
+    <a href="{% url 'events:list' %}" class="small text-muted text-decoration-none hover-text-primary ms-2 fw-semibold">Clear All</a>
+</div>
+{% endif %}
+
+<!-- Toolbar: Grid/List View Toggles -->
+<div class="d-flex justify-content-between align-items-center mb-4 p-3 border rounded-4 bg-white bg-opacity-40 backdrop-blur">
+    <div class="d-flex align-items-center gap-2">
+        <button class="view-toggle-btn active" id="gridToggleBtn" onclick="setView('grid')" title="Grid Layout">
+            <i class="bi bi-grid-fill"></i>
+        </button>
+        <button class="view-toggle-btn" id="listToggleBtn" onclick="setView('list')" title="List Layout">
+            <i class="bi bi-list-task"></i>
+        </button>
+    </div>
+    <div class="text-muted small">
+        Showing <span class="fw-bold text-dark">{{ page_obj.object_list|length }}</span> of {{ page_obj.paginator.count }} events
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Asymmetric Filter Rail (Left Sidebar) -->
+    <div class="col-lg-3">
+        <div class="filter-panel shadow-sm">
+            <h3 class="h6 fw-bold text-uppercase text-muted mb-4"><i class="bi bi-funnel-fill me-2 text-primary"></i> Filter Search</h3>
+            <form method="get" id="filterForm">
+                <!-- Search -->
+                <div class="mb-3">
+                    <label for="searchQuery" class="form-label small fw-bold text-dark">Keyword</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search small"></i></span>
+                        <input type="text" class="form-control border-start-0" id="searchQuery" name="q" value="{{ q }}" placeholder="Artist, name, keyword...">
+                    </div>
+                </div>
+                
+                <!-- Category -->
+                <div class="mb-3">
+                    <label for="categoryFilter" class="form-label small fw-bold text-dark">Category</label>
+                    <select class="form-select" id="categoryFilter" name="category">
+                        <option value="">All Categories</option>
+                        {% for cat_val, cat_label in categories %}
+                        <option value="{{ cat_val }}" {% if selected_category == cat_val %}selected{% endif %}>{{ cat_label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Location -->
+                <div class="mb-3">
+                    <label for="locationFilter" class="form-label small fw-bold text-dark">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-geo-alt small"></i></span>
+                        <input type="text" class="form-control border-start-0" id="locationFilter" name="location" value="{{ location }}" placeholder="Venue name, city...">
+                    </div>
+                </div>
+                
+                <!-- Price -->
+                <div class="mb-3">
+                    <label for="priceFilter" class="form-label small fw-bold text-dark">Pricing</label>
+                    <select class="form-select" id="priceFilter" name="price">
+                        <option value="">All Prices</option>
+                        <option value="free" {% if price == 'free' %}selected{% endif %}>Free Events</option>
+                        <option value="paid" {% if price == 'paid' %}selected{% endif %}>Paid Events</option>
+                    </select>
+                </div>
+                
+                <!-- Date Filter -->
+                <div class="mb-3">
+                    <label for="dateFilter" class="form-label small fw-bold text-dark">Timeframe</label>
+                    <select class="form-select" id="dateFilter" name="date_filter">
+                        <option value="upcoming" {% if date_filter == 'upcoming' %}selected{% endif %}>Upcoming Events</option>
+                        <option value="past" {% if date_filter == 'past' %}selected{% endif %}>Past Events</option>
+                        <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Dates</option>
+                    </select>
+                </div>
+                
+                <!-- Sort By -->
+                <div class="mb-4">
+                    <label for="sortBy" class="form-label small fw-bold text-dark">Sort By</label>
+                    <select class="form-select" id="sortBy" name="sort_by">
+                        <option value="date" {% if sort_by == 'date' %}selected{% endif %}>Chronological</option>
+                        <option value="popular" {% if sort_by == 'popular' %}selected{% endif %}>Popularity</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-premium-primary w-100 mb-2 py-2.5">Apply Filters</button>
+                <a href="{% url 'events:list' %}" class="btn btn-light border w-100 py-2.5">Clear All</a>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Events Grid / List Container -->
+    <div class="col-lg-9">
+        <div class="row row-cols-1 row-cols-md-2 g-4" id="eventsContainer">
+            {% include 'events/event_list_snippet.html' %}
+        </div>
+        
+        <!-- Infinite Scroll Sentinel -->
+        <div id="scrollSentinel" class="py-4 text-center">
+            {% if page_obj.has_next %}
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading next page...</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Page boundary indicator for JS infinite scroll -->
+        <input type="hidden" id="hasNextPageFlag" value="{% if page_obj.has_next %}true{% else %}false{% endif %}">
+    </div>
+</div>
+
+<script>
+    // Handles toggling view state (grid vs list)
+    function setView(view) {
+        const container = document.getElementById('eventsContainer');
+        const gridBtn = document.getElementById('gridToggleBtn');
+        const listBtn = document.getElementById('listToggleBtn');
+        if (view === 'list') {
+            container.classList.remove('row-cols-md-2');
+            container.classList.add('row-cols-1');
+            container.classList.add('list-layout');
+            listBtn.classList.add('active');
+            gridBtn.classList.remove('active');
+            localStorage.setItem('event-list-view', 'list');
+        } else {
+            container.classList.remove('row-cols-1');
+            container.classList.remove('list-layout');
+            container.classList.add('row-cols-md-2');
+            gridBtn.classList.add('active');
+            listBtn.classList.remove('active');
+            localStorage.setItem('event-list-view', 'grid');
+        }
+    }
+
+    // Restore user view preference
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedView = localStorage.getItem('event-list-view');
+        if (savedView === 'list') {
+            setView('list');
+        } else {
+            setView('grid');
+        }
+        
+        // Infinite scroll observer setup
+        let hasNext = document.getElementById('hasNextPageFlag').value === 'true';
+        if (hasNext) {
+            let currentPage = 1;
+            let baseUrl = window.location.pathname;
+            let searchParams = new URLSearchParams(window.location.search);
+            let isLoading = false;
+            
+            const loadMore = () => {
+                if (isLoading || !hasNext) return;
+                isLoading = true;
+                currentPage++;
+                searchParams.set('page', currentPage);
+                let url = baseUrl + '?' + searchParams.toString();
+                
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(res => {
+                        hasNext = res.headers.get('X-Has-Next') === 'true';
+                        return res.text();
+                    })
+                    .then(html => {
+                        if (html.trim() !== '') {
+                            const container = document.getElementById('eventsContainer');
+                            const tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = html;
+                            const newEvents = tempDiv.querySelectorAll('.event-card-col');
+                            newEvents.forEach(el => {
+                                container.appendChild(el);
+                            });
+                        }
+                        
+                        if (!hasNext) {
+                            document.getElementById('scrollSentinel').style.display = 'none';
+                            observer.unobserve(sentinel);
+                        }
+                        isLoading = false;
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        isLoading = false;
+                    });
+            };
+            
+            const sentinel = document.getElementById('scrollSentinel');
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMore();
+                }
+            }, { rootMargin: '300px' });
+            
+            observer.observe(sentinel);
+        }
+    });
+</script>
+{% endblock %}

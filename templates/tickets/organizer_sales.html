@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Ticket Sales Summary — {{ event.event_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill mb-2">Organizer View</span>
+        <h1 class="h2 fw-extrabold text-dark mb-1">Ticket Sales Summary</h1>
+        <p class="text-muted mb-0">Sales reports and registration insights for <span class="fw-bold text-primary">{{ event.event_name }}</span></p>
+    </div>
+    <a class="btn btn-premium-outline" href="{% url 'accounts:dashboard' %}">
+        <i class="bi bi-arrow-left me-2"></i> Dashboard
+    </a>
+</div>
+
+<!-- Statistics Cards Row -->
+<div class="row g-4 mb-5">
+    <!-- Stat 1: Total Revenue -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--accent) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Calculated Revenue</span>
+                    <div class="stat-value mt-2">₹{{ summary.revenue }}</div>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-4">
+                    <i class="bi bi-cash-coin fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stat 2: Total Tickets Sold -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Tickets Issued</span>
+                    <div class="stat-value mt-2">{{ summary.total_tickets }}</div>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
+                    <i class="bi bi-ticket-perforated fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 3: Capacity Status -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--secondary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Occupancy Rate</span>
+                    <div class="stat-value mt-2">{% widthratio summary.total_tickets event.capacity 100 %}%</div>
+                </div>
+                <div class="bg-secondary bg-opacity-10 text-secondary p-3 rounded-4">
+                    <i class="bi bi-percent fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket breakdown details -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card border border-secondary border-opacity-10 rounded-4 p-4 text-center bg-white shadow-sm">
+            <span class="small text-muted d-block text-uppercase fw-semibold mb-2">General Tickets</span>
+            <h3 class="h3 fw-extrabold text-dark mb-0">{{ summary.general }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border border-secondary border-opacity-10 rounded-4 p-4 text-center bg-white shadow-sm">
+            <span class="small text-muted d-block text-uppercase fw-semibold mb-2">Premium Tickets</span>
+            <h3 class="h3 fw-extrabold text-info mb-0">{{ summary.premium }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border border-secondary border-opacity-10 rounded-4 p-4 text-center bg-white shadow-sm">
+            <span class="small text-muted d-block text-uppercase fw-semibold mb-2">VIP Tickets</span>
+            <h3 class="h3 fw-extrabold text-warning mb-0">{{ summary.vip }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Attendee / Ticket Details List -->
+<div class="card card-premium p-4 border-0 mb-4 shadow-sm">
+    <h3 class="h5 fw-bold text-dark mb-4"><i class="bi bi-person-lines-fill me-2 text-primary"></i> Attendee Pass Records</h3>
+    {% if tickets %}
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th scope="col" class="border-0 text-muted small text-uppercase">Ticket Code</th>
+                    <th scope="col" class="border-0 text-muted small text-uppercase">Attendee</th>
+                    <th scope="col" class="border-0 text-muted small text-uppercase">Tier</th>
+                    <th scope="col" class="border-0 text-muted small text-uppercase">Issued At</th>
+                    <th scope="col" class="border-0 text-muted small text-uppercase text-end">Contact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>
+                        <code class="fw-bold text-dark fs-6">{{ ticket.ticket_code }}</code>
+                        <div class="text-muted small">No: {{ ticket.ticket_number }}</div>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ ticket.registration.user.full_name|default:ticket.registration.user.username }}</span>
+                        <div class="text-muted small">@{{ ticket.registration.user.username }}</div>
+                    </td>
+                    <td>
+                        {% if ticket.ticket_type == 'vip' %}
+                        <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill small fw-bold">VIP</span>
+                        {% elif ticket.ticket_type == 'premium' %}
+                        <span class="badge bg-info text-white px-2.5 py-1.5 rounded-pill small fw-bold">Premium</span>
+                        {% else %}
+                        <span class="badge bg-secondary text-white px-2.5 py-1.5 rounded-pill small fw-bold">General</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="text-dark fw-semibold small">{{ ticket.issued_at|date:"M d, Y" }}</div>
+                        <div class="text-muted small">{{ ticket.issued_at|date:"P" }}</div>
+                    </td>
+                    <td class="text-end small">
+                        <span class="text-muted d-block">{{ ticket.registration.user.email }}</span>
+                        <span class="text-muted d-block">{{ ticket.registration.user.mobile_number }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-receipt-cutoff fs-1 text-muted opacity-30 mb-3 d-block"></i>
+        <p class="text-muted">No tickets have been issued for this event yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

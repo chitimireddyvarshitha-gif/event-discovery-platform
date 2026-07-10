@@ -1,0 +1,77 @@
+{% for event in page_obj %}
+<div class="col event-card-col anim-stagger">
+    <article class="card-premium-event position-relative h-100">
+        <!-- Image Wrapper -->
+        <div class="card-img-wrapper">
+            {% if event.banner_image %}
+            <img src="{{ event.banner_image.url }}" alt="{{ event.event_name }}" loading="lazy">
+            {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%); min-height: 200px;">
+                <div class="text-center">
+                    <i class="bi bi-calendar2-week fs-1 opacity-50 mb-2"></i>
+                    <div class="small fw-bold text-uppercase tracking-wider">EventHub</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Signature Date Stamp Badge -->
+            <div class="card-date-badge">
+                <span class="day-num">{{ event.date|date:"d" }}</span>
+                <span class="month-label">{{ event.date|date:"M" }}</span>
+            </div>
+            
+            <!-- Registered Check Badge (distinct Spruce Green theme) -->
+            {% if event.id in registered_event_ids %}
+            <span class="badge bg-success border border-success border-opacity-10 position-absolute" style="top: 15px; right: 55px; z-index: 5; padding: 0.5rem 0.85rem; border-radius: 20px;">
+                <i class="bi bi-check-circle-fill me-1"></i> Registered
+            </span>
+            {% endif %}
+            
+            <!-- Favorite Heart Switch -->
+            {% if user.is_authenticated and user.role == 'attendee' %}
+            <button class="btn btn-heart position-absolute {% if event.id in favorite_event_ids %}active{% endif %}" style="top: 15px; right: 15px; z-index: 5;" data-url="{% url 'favorites:toggle' event.id %}" title="Toggle Favorite">
+                <i class="bi {% if event.id in favorite_event_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- Card Body Info -->
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+            <div>
+                <div class="mb-2">
+                    <span class="badge" style="background: oklch(from var(--accent-secondary) l c h / 0.1); color: var(--accent-secondary-text); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; padding: 0.4rem 0.75rem; border-radius: 20px;">
+                        {{ event.get_category_display }}
+                    </span>
+                </div>
+                <h3 class="h5 fw-bold text-dark mb-2">
+                    <a href="{% url 'events:detail' event.id %}" class="text-decoration-none text-dark hover-text-primary">{{ event.event_name }}</a>
+                </h3>
+                <p class="text-muted small mb-4">{{ event.description|truncatewords:18 }}</p>
+            </div>
+            
+            <div>
+                <div class="border-top border-secondary border-opacity-10 pt-3">
+                    <div class="row g-2 text-dark small mb-3 fw-semibold">
+                        <div class="col-12"><i class="bi bi-calendar-event me-2 text-primary"></i>{{ event.date|date:"M d, Y • P" }}</div>
+                        <div class="col-12 text-truncate"><i class="bi bi-geo-alt me-2 text-primary"></i>{{ event.venue }}</div>
+                        <div class="col-12 font-monospace"><i class="bi bi-wallet2 me-2 text-primary"></i>{% if event.ticket_price > 0 %}₹{{ event.ticket_price }}{% else %}Free{% endif %}</div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center justify-content-between mt-3 pt-2">
+                        <div class="small text-muted">
+                            <i class="bi bi-people me-1"></i> <span class="fw-bold text-dark">{{ event.reg_count }}</span> / {{ event.capacity }} filled
+                        </div>
+                        <a class="btn btn-sm btn-premium-outline px-3" href="{% url 'events:detail' event.id %}">Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+{% empty %}
+<div class="col-12 py-5 text-center bg-white bg-opacity-50 rounded-4 border border-secondary border-opacity-10 shadow-sm anim-stagger">
+    <i class="bi bi-search fs-1 text-muted opacity-30 mb-3 d-block"></i>
+    <h3 class="h5 fw-bold">No Events Match Your Filters</h3>
+    <p class="text-muted small mb-0">No events found matching your criteria. Try adjusting the timeframe, category, or keyword search parameters.</p>
+</div>
+{% endfor %}

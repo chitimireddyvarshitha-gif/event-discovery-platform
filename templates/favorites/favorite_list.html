@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}My Saved Events — EventHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h1 class="h2 fw-extrabold text-dark mb-1">My Saved Events</h1>
+        <p class="text-muted mb-0">Browse and manage events you have favorited.</p>
+    </div>
+    <a class="btn btn-premium-primary" href="{% url 'events:list' %}">
+        <i class="bi bi-compass me-2"></i> Browse More Events
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for favorite in favorites %}
+    <div class="col-md-6 col-lg-4" id="fav-card-{{ favorite.event.id }}">
+        <div class="card card-premium h-100 border-0 shadow-sm position-relative">
+            <!-- Fallback Banner / image -->
+            {% if favorite.event.banner_image %}
+            <div style="background: url('{{ favorite.event.banner_image.url }}') center/cover; min-height: 180px; position: relative;"></div>
+            {% else %}
+            <div style="background: linear-gradient(135deg, hsl(250, 70%, 55%) 0%, hsl(271, 70%, 55%) 100%); min-height: 180px; position: relative;" class="d-flex align-items-center justify-content-center text-white">
+                <div class="text-center">
+                    <i class="bi bi-heart-fill fs-2 opacity-50 mb-2"></i>
+                    <div class="small fw-bold text-uppercase tracking-wider">Saved Pass</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Category Badge -->
+            <span class="badge badge-category badge-{{ favorite.event.category }} position-absolute" style="top: 15px; left: 15px;">
+                {{ favorite.event.get_category_display }}
+            </span>
+
+            <!-- AJAX Heart Toggle -->
+            <button class="btn btn-heart active position-absolute" style="top: 15px; right: 15px;" data-url="{% url 'favorites:toggle' favorite.event.id %}" title="Remove from Favorites">
+                <i class="bi bi-heart-fill"></i>
+            </button>
+
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h3 class="h6 fw-extrabold text-dark mb-2">
+                        <a href="{% url 'events:detail' favorite.event.id %}" class="text-decoration-none text-dark hover-text-primary">{{ favorite.event.event_name }}</a>
+                    </h3>
+                    <div class="small text-muted mb-3">
+                        <div class="mb-1"><i class="bi bi-calendar-event me-2 text-primary"></i>{{ favorite.event.date|date:"M d, Y • P" }}</div>
+                        <div class="text-truncate"><i class="bi bi-geo-alt me-2 text-primary"></i>{{ favorite.event.venue }}</div>
+                    </div>
+                </div>
+
+                <div class="border-top border-secondary border-opacity-10 pt-3 mt-2 d-flex justify-content-between align-items-center">
+                    <span class="fw-extrabold text-primary">
+                        {% if favorite.event.ticket_price > 0 %}₹{{ favorite.event.ticket_price }}{% else %}Free{% endif %}
+                    </span>
+                    <a class="btn btn-sm btn-premium-outline px-3" href="{% url 'events:detail' favorite.event.id %}">
+                        Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5 bg-white rounded-4 border border-secondary border-opacity-10 shadow-sm">
+            <i class="bi bi-heart fs-1 text-muted opacity-30 mb-3 d-block"></i>
+            <h3 class="h5 fw-bold">Your Wishlist is Empty</h3>
+            <p class="text-muted small mb-0">Browse our public events and hit the heart icon to save them for later.</p>
+            <a class="btn btn-premium-primary px-4 mt-3" href="{% url 'events:list' %}">Explore Events</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Optional script to hide cards on favorites list page immediately when clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.addEventListener('click', function(e) {
+            const heartBtn = e.target.closest('.btn-heart');
+            if (heartBtn) {
+                const cardCol = heartBtn.closest('[id^="fav-card-"]');
+                if (cardCol) {
+                    // Smoothly fade out the card on this specific favorites page
+                    cardCol.style.transition = 'all 0.3s ease';
+                    cardCol.style.opacity = '0';
+                    cardCol.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        cardCol.remove();
+                        // Check if no cards left and reload or display empty state
+                        const cards = document.querySelectorAll('[id^="fav-card-"]');
+                        if (cards.length === 0) {
+                            window.location.reload();
+                        }
+                    }, 300);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

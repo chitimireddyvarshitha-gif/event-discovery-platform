@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Inbox — EventHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h1 class="h2 fw-extrabold text-dark mb-1">Notifications Inbox</h1>
+        <p class="text-muted mb-0">Stay updated on your booking status, ticket issuances, and organizer updates.</p>
+    </div>
+    <a class="btn btn-premium-primary" href="{% url 'events:list' %}">
+        <i class="bi bi-compass me-2"></i> Explore Events
+    </a>
+</div>
+
+<div class="card card-premium p-4 border-0 shadow-sm">
+    <div class="card-body">
+        {% if notifications %}
+        <div class="list-group list-group-flush">
+            {% for notification in notifications %}
+            <div class="list-group-item px-0 py-4 bg-transparent border-secondary border-opacity-10 {% if not notification.is_read %}fw-semibold{% endif %}" id="notif-row-{{ notification.id }}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start">
+                        <!-- Icon indicator based on read status -->
+                        <div class="me-3 mt-1">
+                            {% if notification.is_read %}
+                            <div class="bg-light text-muted p-2.5 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-envelope-open"></i>
+                            </div>
+                            {% else %}
+                            <div class="bg-primary bg-opacity-10 text-primary p-2.5 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" id="notif-icon-{{ notification.id }}">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <h3 class="h6 fw-extrabold text-dark mb-1 d-inline-flex align-items-center">
+                                {{ notification.title }}
+                                {% if not notification.is_read %}
+                                <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.65rem;" id="notif-badge-{{ notification.id }}">NEW</span>
+                                {% endif %}
+                            </h3>
+                            <p class="text-secondary small mb-1" style="white-space: pre-line;">{{ notification.message }}</p>
+                            <span class="text-muted small" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i> {{ notification.created_at|date:"M d, Y" }} at {{ notification.created_at|date:"P" }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Mark as read action button -->
+                    {% if not notification.is_read %}
+                    <a href="{% url 'notifications:mark_read' notification.id %}" class="btn btn-sm btn-outline-secondary px-3 py-1.5 align-self-center mark-read-btn" data-id="{{ notification.id }}">
+                        Mark as Read
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-bell-slash fs-1 text-muted opacity-30 mb-3 d-block"></i>
+            <h3 class="h5 fw-bold">Inbox is Empty</h3>
+            <p class="text-muted small mb-0">You don't have any notifications at the moment.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle AJAX mark as read on inbox list page
+        document.querySelectorAll('.mark-read-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                const id = this.getAttribute('data-id');
+                const row = document.getElementById('notif-row-' + id);
+                const badgeEl = document.getElementById('notif-badge-' + id);
+                const iconContainer = document.getElementById('notif-icon-' + id);
+                const markBtn = this;
+                
+                // Fetch CSRF Token
+                const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+                const csrfToken = csrfInput ? csrfInput.value : '';
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrfToken,
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Dynamically update UI classes without reloading page
+                        row.classList.remove('fw-semibold');
+                        if (badgeEl) badgeEl.remove();
+                        if (iconContainer) {
+                            iconContainer.className = 'bg-light text-muted p-2.5 rounded-circle d-flex align-items-center justify-content-center';
+                            iconContainer.querySelector('i').className = 'bi bi-envelope-open';
+                        }
+                        markBtn.remove();
+                        showToast(data.message, 'success');
+                        
+                        // Update base notification bell if present
+                        if (window.updateNotifications) {
+                            window.updateNotifications();
+                        } else {
+                            // If updateNotifications is local inside standard block, let it auto-poll
+                            const badge = document.getElementById('notificationBadge');
+                            if (badge) {
+                                let count = parseInt(badge.textContent || '0') - 1;
+                                if (count > 0) {
+                                    badge.textContent = count;
+                                } else {
+                                    badge.classList.add('d-none');
+                                }
+                            }
+                        }
+                    } else {
+                        showToast(data.message || 'Error occurred.', 'danger');
+                    }
+                })
+                .catch(err => {
+                    console.error("AJAX error marking read:", err);
+                    window.location.href = url;
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

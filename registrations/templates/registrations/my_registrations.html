@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}My Registrations — EventHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h1 class="h2 fw-extrabold text-dark mb-1">My Bookings</h1>
+        <p class="text-muted mb-0">Track your registrations and view issued tickets.</p>
+    </div>
+    <a class="btn btn-premium-primary" href="{% url 'events:list' %}">
+        <i class="bi bi-compass me-2"></i> Explore More
+    </a>
+</div>
+
+<div class="card card-premium p-4 border-0 shadow-sm">
+    <div class="card-body">
+        {% if registrations %}
+        <div class="list-group list-group-flush">
+            {% for registration in registrations %}
+            <div class="list-group-item px-0 py-4 bg-transparent border-secondary border-opacity-10">
+                <div class="row align-items-center g-3">
+                    <!-- Event Details -->
+                    <div class="col-md-6">
+                        <span class="badge badge-category badge-{{ registration.event.category }} mb-2">
+                            {{ registration.event.get_category_display }}
+                        </span>
+                        {% if registration.ticket_type == 'vip' %}
+                        <span class="badge bg-warning text-dark ms-1 mb-2">VIP</span>
+                        {% elif registration.ticket_type == 'premium' %}
+                        <span class="badge bg-danger ms-1 mb-2">PREMIUM</span>
+                        {% else %}
+                        <span class="badge bg-secondary ms-1 mb-2">GENERAL</span>
+                        {% endif %}
+                        <h3 class="h5 fw-extrabold text-dark mb-2">{{ registration.event.event_name }}</h3>
+                        <div class="row g-2 small text-muted">
+                            <div class="col-sm-6">
+                                <i class="bi bi-calendar-event me-2 text-primary"></i>{{ registration.event.date|date:"M d, Y" }} at {{ registration.event.date|date:"P" }}
+                            </div>
+                            <div class="col-sm-6 text-truncate">
+                                <i class="bi bi-geo-alt me-2 text-primary"></i>{{ registration.event.venue }}
+                            </div>
+                        </div>
+                        {% if registration.status == 'pending' %}
+                        <div class="mt-2 small text-warning">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Awaiting organiser payment approval. Your ticket will be issued once approved.
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Registration Status -->
+                    <div class="col-md-2 text-md-center">
+                        {% if registration.status == 'confirmed' %}
+                        <span class="badge bg-success-subtle text-success border border-success border-opacity-20 px-3 py-2 rounded-pill small">
+                            <i class="bi bi-check-circle me-1"></i> Confirmed
+                        </span>
+                        {% elif registration.status == 'cancelled' %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger border-opacity-20 px-3 py-2 rounded-pill small">
+                            <i class="bi bi-x-circle me-1"></i> Cancelled
+                        </span>
+                        {% else %}
+                        <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-20 px-3 py-2 rounded-pill small">
+                            <i class="bi bi-hourglass-split me-1"></i> Pending
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Ticket / Details Actions -->
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-grid d-sm-flex justify-content-md-end gap-2">
+                            <a class="btn btn-sm btn-outline-secondary px-3" href="{% url 'events:detail' registration.event.id %}">
+                                Event Details
+                            </a>
+                            {% if registration.status == 'confirmed' %}
+                            {% with ticket=registration.ticket %}
+                            {% if ticket %}
+                            <a class="btn btn-sm btn-premium-primary px-3 d-flex align-items-center justify-content-center" href="{% url 'tickets:detail' ticket.id %}">
+                                <i class="bi bi-ticket-perforated me-1"></i> View Ticket
+                            </a>
+                            {% endif %}
+                            {% endwith %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-minus fs-1 text-muted opacity-30 mb-3 d-block"></i>
+            <h3 class="h5 fw-bold">No Registrations Yet</h3>
+            <p class="text-muted small mb-3">Browse our listings to find events you'd like to attend.</p>
+            <a class="btn btn-premium-primary px-4" href="{% url 'events:list' %}">Browse Events</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

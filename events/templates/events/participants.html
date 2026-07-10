@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendee Records — {{ event.event_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill mb-2">Organizer Dashboard</span>
+        <h1 class="h2 fw-extrabold text-dark mb-1">Registered Participants</h1>
+        <p class="text-muted mb-0">List of attendees who registered for <span class="fw-bold text-primary">{{ event.event_name }}</span></p>
+    </div>
+    <a class="btn btn-premium-outline" href="{% url 'events:detail' event.id %}">
+        <i class="bi bi-arrow-left me-2"></i> Back to Event
+    </a>
+</div>
+
+<div class="card card-premium p-4 border-0 shadow-sm">
+    <div class="card-body">
+        {% if registrations %}
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">#</th>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">Name & Username</th>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">Email Address</th>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">Mobile No.</th>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">Booking Status</th>
+                        <th scope="col" class="border-0 text-muted small text-uppercase">Date Registered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for registration in registrations %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>
+                            <span class="fw-bold text-dark">{{ registration.user.full_name|default:registration.user.username }}</span>
+                            <div class="text-muted small">@{{ registration.user.username }}</div>
+                        </td>
+                        <td>{{ registration.user.email }}</td>
+                        <td>{{ registration.user.mobile_number|default:'-' }}</td>
+                        <td>
+                            {% if registration.status == 'confirmed' %}
+                            <span class="badge bg-success-subtle text-success border border-success border-opacity-20 px-2.5 py-1.5 rounded-pill small">Confirmed</span>
+                            {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-20 px-2.5 py-1.5 rounded-pill small">{{ registration.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold small text-dark">{{ registration.registration_date|date:"M d, Y" }}</div>
+                            <div class="text-muted small">{{ registration.registration_date|date:"P" }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people fs-1 text-muted opacity-30 mb-3 d-block"></i>
+            <p class="text-muted">No attendees have registered for this event yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

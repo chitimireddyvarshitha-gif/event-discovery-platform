@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to EventHub — Discover and Host Amazing Events{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center g-5 py-3 anim-stagger">
+    <div class="col-lg-6">
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">
+            <i class="bi bi-stars me-1"></i> Smart discovery for modern events
+        </span>
+        <h1 class="display-3 fw-extrabold text-dark lh-sm mb-3">
+            Discover <span class="text-gradient sticker-accent">Unforgettable</span> Experiences
+        </h1>
+        <p class="lead text-dark mb-4 fs-5 fw-semibold" style="font-size: 1.25rem !important;">
+            EventHub is the premier platform to discover, book, and manage local and international events. Find your next community or orchestrate your next sold-out gig.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+            <a class="btn btn-premium-primary btn-lg d-flex align-items-center px-4" href="{% url 'events:list' %}">
+                <i class="bi bi-compass-fill me-2"></i> Explore Events
+            </a>
+            {% if not user.is_authenticated or user.role != 'organizer' %}
+            <a class="btn btn-premium-outline btn-lg d-flex align-items-center px-4" href="{% url 'accounts:register' %}">
+                <i class="bi bi-plus-circle-fill me-2"></i> Host an Event
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="position-relative">
+            <!-- Decorative colored gradients behind the card -->
+            <div class="position-absolute bg-primary rounded-circle filter blur-3xl opacity-20" style="width: 250px; height: 250px; top: -50px; right: -30px; z-index: -1;"></div>
+            <div class="position-absolute bg-secondary rounded-circle filter blur-3xl opacity-20" style="width: 200px; height: 200px; bottom: -50px; left: -30px; z-index: -1;"></div>
+            
+            <div class="card card-premium p-4">
+                <div class="card-body p-3">
+                    <h3 class="h4 fw-bold text-dark mb-3"><i class="bi bi-intersect me-2 text-primary"></i> Explore Categories</h3>
+                    <p class="text-muted small">Choose your vibe and discover upcoming sessions:</p>
+                    
+                    <div class="row g-3 mt-1">
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=music" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-music-note-beamed fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Music</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=cultural" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-palette fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Cultural</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=business" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-briefcase fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Business</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=education" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-book fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Education</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=sports" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-dribbble fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Sports</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <a href="{% url 'events:list' %}?category=food" class="text-decoration-none">
+                                <div class="p-3 border border-secondary border-opacity-10 rounded-4 text-center bg-white bg-opacity-50 hover-scale transition h-100">
+                                    <i class="bi bi-egg-fried fs-3 text-gradient mb-2 d-block"></i>
+                                    <span class="small fw-bold text-secondary">Food</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Stats Row -->
+<div class="row g-4 mt-5 mb-5 text-center anim-stagger">
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card">
+            <div class="stat-value text-gradient">{{ total_events|default:"10+" }}</div>
+            <span class="text-muted small text-uppercase fw-bold">Live Experiences</span>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: var(--pop-pink) !important;">
+            <div class="stat-value text-gradient">{{ total_registrations|default:"250" }}+</div>
+            <span class="text-muted small text-uppercase fw-bold">Tickets Booked</span>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: var(--accent-secondary) !important;">
+            <div class="stat-value text-gradient">{{ active_organizers|default:"8" }}</div>
+            <span class="text-muted small text-uppercase fw-bold">Verified Clubs & Hosts</span>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card" style="border-left-color: var(--pop-orange) !important;">
+            <div class="stat-value text-gradient">100%</div>
+            <span class="text-muted small text-uppercase fw-bold">Secure Gate Entries</span>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Events Section -->
+<div class="my-5 pt-3">
+    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2 text-start">
+        <div>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill mb-2">
+                <i class="bi bi-clock-history me-1"></i> Don't miss out
+            </span>
+            <h2 class="h2 fw-black text-uppercase m-0">⚡ Upcoming Experiences ⚡</h2>
+        </div>
+        <a href="{% url 'events:list' %}" class="btn btn-premium-outline">Explore All <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 text-start">
+        {% if upcoming_events %}
+            {% for event in upcoming_events %}
+            <div class="col">
+                <article class="card-premium-event position-relative h-100">
+                    <div class="card-img-wrapper">
+                        {% if event.banner_image %}
+                        <img src="{{ event.banner_image.url }}" alt="{{ event.event_name }}" loading="lazy">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%); min-height: 180px;">
+                            <div class="text-center">
+                                <i class="bi bi-calendar2-week fs-1 opacity-50 mb-2"></i>
+                                <div class="small fw-bold text-uppercase tracking-wider">EventHub</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-date-badge">
+                            <span class="day-num">{{ event.date|date:"d" }}</span>
+                            <span class="month-label">{{ event.date|date:"M" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="mb-2">
+                                <span class="badge badge-category badge-{{ event.category|default:'music' }}">
+                                    {{ event.get_category_display }}
+                                </span>
+                            </div>
+                            <h3 class="h5 fw-bold text-dark mb-2">
+                                <a href="{% url 'events:detail' event.id %}" class="text-decoration-none text-dark hover-text-primary">{{ event.event_name }}</a>
+                            </h3>
+                            <p class="text-muted small mb-4">{{ event.description|truncatewords:15 }}</p>
+                        </div>
+                        
+                        <div>
+                            <div class="border-top border-secondary border-opacity-10 pt-3">
+                                <div class="row g-1 text-dark small mb-3 fw-semibold">
+                                    <div class="col-12 text-truncate"><i class="bi bi-geo-alt me-2 text-primary"></i>{{ event.venue }}</div>
+                                    <div class="col-12 font-monospace"><i class="bi bi-wallet2 me-2 text-primary"></i>{% if event.ticket_price > 0 %}₹{{ event.ticket_price }}{% else %}Free{% endif %}</div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between mt-3">
+                                    <span class="small text-muted"><i class="bi bi-person-fill text-secondary"></i> {{ event.organizer.username }}</span>
+                                    <a class="btn btn-sm btn-premium-primary px-3" href="{% url 'events:detail' event.id %}">Book Ticket</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- Empty State fallback -->
+            <div class="col-12 py-5 text-center bg-white bg-opacity-50 rounded-4 border border-secondary border-opacity-10 shadow-sm">
+                <i class="bi bi-emoji-smile fs-1 text-muted opacity-30 mb-3 d-block"></i>
+                <h3 class="h5 fw-bold">No Upcoming Events Right Now</h3>
+                <p class="text-muted small mb-3">Be the change! Host the first event of this season.</p>
+                <a href="{% url 'accounts:register' %}" class="btn btn-premium-primary">Become a Host</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="my-5 py-5 border-top border-secondary border-opacity-10">
+    <div class="text-center mb-5">
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill mb-2">
+            <i class="bi bi-gear-wide-connected me-1"></i> Seamless Flow
+        </span>
+        <h2 class="display-5 fw-black text-uppercase font-display">🛠️ HOW IT WORKS 🛠️</h2>
+        <p class="text-muted mx-auto" style="max-width: 600px;">Get your passes or host your community in 3 easy steps.</p>
+    </div>
+    
+    <div class="row g-4 text-start">
+        <div class="col-md-4">
+            <div class="card card-premium p-4 h-100 text-center">
+                <div class="d-inline-flex bg-primary bg-opacity-10 text-primary p-3 rounded-circle border border-primary border-opacity-25 mx-auto mb-3" style="width: 60px; height: 60px; align-items: center; justify-content: center;">
+                    <i class="bi bi-search fs-3"></i>
+                </div>
+                <h4 class="h5 fw-bold mb-2">1. Explore Events</h4>
+                <p class="text-muted small mb-0">Browse through high-quality hackathons, sports meets, music gigs, and food festivals curated for you.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-premium p-4 h-100 text-center" style="border-left-width: 6px !important; border-left-color: var(--pop-pink) !important;">
+                <div class="d-inline-flex bg-pink bg-opacity-10 text-pink p-3 rounded-circle border border-pink border-opacity-25 mx-auto mb-3" style="width: 60px; height: 60px; align-items: center; justify-content: center; color: var(--pop-pink);">
+                    <i class="bi bi-ticket-perforated fs-3"></i>
+                </div>
+                <h4 class="h5 fw-bold mb-2">2. Secure Tickets</h4>
+                <p class="text-muted small mb-0">Book free passes or choose premium/VIP seats using our fast, double-encrypted ticketing queue.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-premium p-4 h-100 text-center">
+                <div class="d-inline-flex bg-success bg-opacity-10 text-success p-3 rounded-circle border border-success border-opacity-25 mx-auto mb-3" style="width: 60px; height: 60px; align-items: center; justify-content: center;">
+                    <i class="bi bi-qr-code-scan fs-3"></i>
+                </div>
+                <h4 class="h5 fw-bold mb-2">3. Scan & Attend</h4>
+                <p class="text-muted small mb-0">Show your secure dynamic QR code at the venue gate, get checked in instantly, and enjoy the vibe!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="my-5 py-5 border-top border-secondary border-opacity-10 bg-surface-sunken p-4 rounded-4 border border-secondary border-opacity-10" style="background-color: var(--surface-sunken);">
+    <div class="text-center mb-5">
+        <h2 class="h2 fw-black text-uppercase font-display">💬 JOIN AN ACTIVE COMMUNITY 💬</h2>
+        <p class="text-muted">Read feedback from fellow creators and attendees.</p>
+    </div>
+    
+    <div class="row g-4 text-start">
+        <div class="col-md-6">
+            <div class="card p-4 border border-secondary border-opacity-20 rounded-4 bg-white shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">
+                        A
+                    </div>
+                    <div>
+                        <h5 class="h6 fw-bold mb-0 text-dark">Aravind Sharma</h5>
+                        <span class="text-muted small">Attendee — CSE Student</span>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">"The ticket pass system is amazing! I registered for GMOCS 2026 and got my QR code ticket on my dashboard instantly. Checking in at the venue was super fast!"</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 border border-secondary border-opacity-20 rounded-4 bg-white shadow-sm h-100">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 48px; height: 48px;">
+                        L
+                    </div>
+                    <div>
+                        <h5 class="h6 fw-bold mb-0 text-dark">Likith Reddy</h5>
+                        <span class="text-muted small">Organizer — Fine Arts Lead</span>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">"As an organizer, the dashboard analytics and attendee lists save me hours of manual tracking. Highly recommend EventHub to any student club hosting events."</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA host banner -->
+<div class="card card-premium p-5 my-5 text-center bg-accent-container text-dark border-4" style="background: var(--accent-container) !important;">
+    <h2 class="display-5 fw-black text-uppercase mb-3 font-display">🚀 Launch Your Next Event 🚀</h2>
+    <p class="lead fw-semibold mb-4 mx-auto text-dark" style="max-width: 700px;">
+        Are you a club leader, department head, or individual coordinator? Leverage our professional analytics dashboard and registration queues to run events flawlessly.
+    </p>
+    <div>
+        <a href="{% url 'accounts:register' %}?role=organizer" class="btn btn-premium-primary btn-lg px-4 py-3">Host Your Event Now</a>
+    </div>
+</div>
+{% endblock %}
