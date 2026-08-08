@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}My Profile — EventHub{% endblock %}
+
+{% block content %}
+<div class="row g-4 py-3">
+    <!-- Profile Edit Form -->
+    <div class="col-lg-8">
+        <div class="card card-premium p-4 border-0">
+            <div class="card-body">
+                <h2 class="h4 fw-extrabold text-dark mb-4"><i class="bi bi-person-gear me-2 text-primary"></i> Profile Settings</h2>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-flex align-items-center gap-2 mt-3">
+                        <button type="submit" class="btn btn-premium-primary px-4 py-2 shadow-sm">
+                            <i class="bi bi-save-fill me-2"></i> Save Changes
+                        </button>
+                        <a href="{% url 'accounts:password_change' %}" class="btn btn-premium-outline px-4 py-2">
+                            <i class="bi bi-key-fill me-2"></i> Change Password
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Account Overview Panel -->
+    <div class="col-lg-4">
+        <div class="card card-premium p-4 border-0 mb-4 text-center">
+            <div class="card-body">
+                {% if request.user.profile_picture %}
+                <div class="mb-3">
+                    <img src="{{ request.user.profile_picture.url }}" alt="{{ request.user.username }}" class="rounded-circle shadow border border-2 border-primary" style="width: 80px; height: 80px; object-fit: cover;">
+                </div>
+                {% else %}
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                    <i class="bi bi-person-badge fs-1"></i>
+                </div>
+                {% endif %}
+                <h3 class="h5 fw-bold text-dark mb-1">{{ request.user.full_name|default:request.user.username }}</h3>
+                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill mt-1">{{ request.user.get_role_display }}</span>
+                
+                <div class="mt-4 pt-4 border-top border-secondary border-opacity-10 text-start">
+                    <div class="mb-3">
+                        <span class="small text-muted d-block">Username</span>
+                        <span class="fw-semibold text-dark">{{ request.user.username }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="small text-muted d-block">Email Address</span>
+                        <span class="fw-semibold text-dark">{{ request.user.email }}</span>
+                    </div>
+                    <div>
+                        <span class="small text-muted d-block">Mobile Number</span>
+                        <span class="fw-semibold text-dark">{{ request.user.mobile_number|default:"Not specified" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

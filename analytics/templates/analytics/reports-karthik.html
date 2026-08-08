@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics & Reports — EventHub{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-2">Metrics Center</span>
+        <h1 class="h2 fw-extrabold text-dark mb-1">Reports & Analytics</h1>
+        <p class="text-muted mb-0">Platform performance logs, charts, and aggregated financial stats.</p>
+    </div>
+    <a class="btn btn-premium-outline" href="{% url 'accounts:dashboard' %}">
+        <i class="bi bi-grid me-2"></i> Dashboard
+    </a>
+</div>
+
+<!-- Counters Grid -->
+<div class="row g-4 mb-5">
+    {% if role == 'organizer' %}
+    <!-- Organizer Stats -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--primary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Active Events</span>
+                    <div class="stat-value mt-2">{{ total_events }}</div>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
+                    <i class="bi bi-calendar-event fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--secondary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Total Registrations</span>
+                    <div class="stat-value mt-2">{{ total_registrations }}</div>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info p-3 rounded-4">
+                    <i class="bi bi-people fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--accent) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Earned Revenue</span>
+                    <div class="stat-value mt-2">₹{{ total_revenue }}</div>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-4">
+                    <i class="bi bi-cash-coin fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elif role == 'attendee' %}
+    <!-- Attendee Stats -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--primary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Booked Events</span>
+                    <div class="stat-value mt-2">{{ total_registrations }}</div>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
+                    <i class="bi bi-bookmark-check fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--secondary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Issued Passes</span>
+                    <div class="stat-value mt-2">{{ total_tickets }}</div>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info p-3 rounded-4">
+                    <i class="bi bi-ticket-perforated fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--accent) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Total Spent</span>
+                    <div class="stat-value mt-2">₹{{ total_spent }}</div>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-4">
+                    <i class="bi bi-credit-card fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Admin Stats -->
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--primary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Total Platform Users</span>
+                    <div class="stat-value mt-2 mb-1">{{ total_users }}</div>
+                    <div class="small text-muted">
+                        <span class="fw-semibold text-primary">{{ total_attendees }}</span> Attendees &bull; <span class="fw-semibold text-secondary">{{ total_organizers }}</span> Organizers
+                    </div>
+                </div>
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-4">
+                    <i class="bi bi-people fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--secondary) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Active Hosted Events</span>
+                    <div class="stat-value mt-2">{{ total_events }}</div>
+                </div>
+                <div class="bg-info bg-opacity-10 text-info p-3 rounded-4">
+                    <i class="bi bi-calendar4-week fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-premium stat-card border-0" style="border-left-color: var(--accent) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Aggregated Revenue</span>
+                    <div class="stat-value mt-2">₹{{ total_revenue }}</div>
+                </div>
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-4">
+                    <i class="bi bi-bank fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-4">
+    <!-- Chart Card 1 -->
+    <div class="col-lg-7">
+        <div class="card card-premium border-0 p-4 shadow-sm h-100">
+            <h3 class="h5 fw-bold text-dark mb-4">
+                {% if role == 'organizer' %}
+                <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Booking Trends (Top 5 Events)
+                {% elif role == 'attendee' %}
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i> Monthly Booking History
+                {% else %}
+                <i class="bi bi-graph-up-arrow text-primary me-2"></i> User Acquisition Growth
+                {% endif %}
+            </h3>
+            <div style="position: relative; height: 320px; width: 100%;">
+                <canvas id="chartPrimary"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Card 2 -->
+    <div class="col-lg-5">
+        <div class="card card-premium border-0 p-4 shadow-sm h-100">
+            <h3 class="h5 fw-bold text-dark mb-4">
+                {% if role == 'organizer' %}
+                <i class="bi bi-pie-chart-fill text-primary me-2"></i> Ticket Tier Distributions
+                {% elif role == 'attendee' %}
+                <i class="bi bi-pie-chart-fill text-primary me-2"></i> Spent per Event Category
+                {% else %}
+                <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Popular Events
+                {% endif %}
+            </h3>
+            <div style="position: relative; height: 320px; width: 100%;" class="d-flex align-items-center justify-content-center">
+                <canvas id="chartSecondary"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const primaryCtx = document.getElementById('chartPrimary').getContext('2d');
+        const secondaryCtx = document.getElementById('chartSecondary').getContext('2d');
+
+        // Fetch dynamic chart details from back-end API
+        fetch("{% url 'analytics:chart_data' %}")
+            .then(res => res.json())
+            .then(data => {
+                const userRole = "{{ role }}";
+
+                // Setup dynamic configurations
+                if (userRole === "organizer") {
+                    // 1. Registrations per Event (Bar Chart)
+                    new Chart(primaryCtx, {
+                        type: 'bar',
+                        data: data.bar,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+
+                    // 2. Ticket Types Distribution (Doughnut)
+                    new Chart(secondaryCtx, {
+                        type: 'doughnut',
+                        data: data.doughnut,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+
+                } else if (userRole === "attendee") {
+                    // 1. Bookings by Month (Line Chart)
+                    new Chart(primaryCtx, {
+                        type: 'line',
+                        data: data.line,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+
+                    // 2. Spent per Category (Doughnut)
+                    new Chart(secondaryCtx, {
+                        type: 'doughnut',
+                        data: data.doughnut,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+
+                } else {
+                    // Admin / Superuser
+                    // 1. Signups (Line Chart)
+                    new Chart(primaryCtx, {
+                        type: 'line',
+                        data: data.line,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+
+                    // 2. Popular Events (Bar Chart)
+                    new Chart(secondaryCtx, {
+                        type: 'bar',
+                        data: data.bar,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching analytics datasets:", err);
+            });
+    });
+</script>
+{% endblock %}
